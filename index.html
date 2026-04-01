@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NLC Watchdog Tools — Elevate AV</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:      #0d1117;
+    --panel:   #161b22;
+    --border:  #30363d;
+    --text:    #e6edf3;
+    --muted:   #7d8590;
+    --green:   #3fb950;
+    --blue:    #58a6ff;
+    --red:     #f85149;
+    --orange:  #d29922;
+    --purple:  #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 48px;
+    max-width: 480px;
+    width: 100%;
+    margin: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+  }
+  .logo-icon {
+    width: 42px; height: 42px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .logo-sub   { font-size: 12px; color: var(--muted); }
+
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .version-badge {
+    display: inline-block;
+    background: rgba(88,166,255,0.15);
+    color: var(--blue);
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px;
+    margin-left: 8px; vertical-align: middle;
+  }
+  .desc {
+    color: var(--muted); font-size: 14px; line-height: 1.6;
+    margin: 12px 0 28px;
+  }
+
+  .gate { }
+  .gate label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .input-row { display: flex; gap: 10px; }
+  #pw-input {
+    flex: 1;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 14px;
+    border-radius: 6px; font-size: 14px; font-family: 'SF Mono', monospace;
+    outline: none;
+  }
+  #pw-input:focus { border-color: var(--blue); }
+  #pw-input.shake {
+    animation: shake 0.35s ease;
+    border-color: var(--red);
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+  #unlock-btn {
+    background: var(--blue); color: #000;
+    border: none; padding: 10px 20px;
+    border-radius: 6px; font-weight: 700; font-size: 14px;
+    cursor: pointer; white-space: nowrap;
+  }
+  #unlock-btn:hover { filter: brightness(1.15); }
+  #pw-err { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 18px; }
+
+  .download-area { display: none; }
+  .dl-header {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--green); font-size: 14px; font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .file-card {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .file-icon { font-size: 26px; flex-shrink: 0; }
+  .file-info { flex: 1; }
+  .file-name { font-size: 14px; font-weight: 600; }
+  .file-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .dl-btn {
+    background: var(--green); color: #000;
+    border: none; padding: 8px 16px;
+    border-radius: 6px; font-weight: 700; font-size: 13px;
+    cursor: pointer; text-decoration: none;
+    display: inline-block; white-space: nowrap;
+  }
+  .dl-btn:hover { filter: brightness(1.1); }
+
+  .includes {
+    margin-top: 20px; padding: 14px 16px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  }
+  .includes-title { font-size: 11px; font-weight: 700; color: var(--muted);
+                    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .includes ul { list-style: none; }
+  .includes li { font-size: 12px; color: var(--muted); padding: 2px 0; }
+  .includes li::before { content: "▸ "; color: var(--blue); }
+
+  .footer {
+    margin-top: 32px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); text-align: center; line-height: 1.8;
+  }
+  .footer a { color: var(--muted); text-decoration: none; }
+  .footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <div class="logo-icon">🔭</div>
+    <div class="logo-text">
+      <div class="logo-title">Elevate AV</div>
+      <div class="logo-sub">NLC Network Tools</div>
+    </div>
+  </div>
+
+  <h1>NLC Watchdog <span class="version-badge">v1.3</span></h1>
+  <p class="desc">
+    Real-time Cisco switch monitoring for Dante audio diagnostics.
+    Polls all site switches via SSH, detects IGMP, QoS, and link events,
+    and serves a live correlation dashboard.
+  </p>
+
+  <!-- ── Password gate ── -->
+  <div class="gate" id="gate">
+    <label for="pw-input">Access code</label>
+    <div class="input-row">
+      <input id="pw-input" type="password" placeholder="Enter access code…" autocomplete="off" autofocus>
+      <button id="unlock-btn" onclick="unlock()">Unlock</button>
+    </div>
+    <div id="pw-err"></div>
+  </div>
+
+  <!-- ── Download area (hidden until unlocked) ── -->
+  <div class="download-area" id="download-area">
+    <div class="dl-header">✓ Access granted — download below</div>
+
+    <div class="file-card">
+      <div class="file-icon">📦</div>
+      <div class="file-info">
+        <div class="file-name">nlc_watchdog_tools.zip</div>
+        <div class="file-desc">watch.py · site_config.yaml · launchers · installer</div>
+      </div>
+      <a class="dl-btn" href="nlc_watchdog_tools.zip" download>Download</a>
+    </div>
+
+    <div class="includes">
+      <div class="includes-title">What's included</div>
+      <ul>
+        <li>watch.py — main watchdog (v1.3)</li>
+        <li>site_config.yaml — all NLC site switch lists</li>
+        <li>install_watchdog.bat — one-time Python dependency installer</li>
+        <li>run_watchdog_CWY.bat — double-click to start CWY monitoring</li>
+        <li>requirements.txt — netmiko, paramiko, pyyaml</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    NLC Network Watchdog · Elevate AV ·
+    <a href="https://elevate-av.com">elevate-av.com</a><br>
+    For authorized NLC staff and Elevate AV personnel only.
+  </div>
+
+</div>
+
+<script>
+const HASH = "cb8215bb1838b6ef513e798ef911a4c8e2dead5f794d7634b54d4f26e98ce238";
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function unlock() {
+  const val = document.getElementById("pw-input").value.trim();
+  if (!val) return;
+  const h = await sha256(val);
+  if (h === HASH) {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("download-area").style.display = "block";
+  } else {
+    const inp = document.getElementById("pw-input");
+    inp.classList.remove("shake");
+    void inp.offsetWidth;
+    inp.classList.add("shake");
+    document.getElementById("pw-err").textContent = "Incorrect access code.";
+    setTimeout(() => inp.classList.remove("shake"), 400);
+  }
+}
+
+document.getElementById("pw-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") unlock();
+  document.getElementById("pw-err").textContent = "";
+});
+</script>
+</body>
+</html>
